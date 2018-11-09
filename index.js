@@ -5,9 +5,9 @@ morgan      = require('morgan');
 mongoose    = require('mongoose');
 jwt         = require('jsonwebtoken');
 passport 	= require('passport');
-config      = require('./config');
+config      = require('./config.js');
 routes 		= require('./route/routes');
-secureRoute = require('./route/secure-route');
+secureRoute = require('./route/secure-routes');
 
 // =======================
 // configuration
@@ -20,7 +20,7 @@ mongoose.connect(config.database,{useNewUrlParser:true});
 
 // application variables
 app.set('superSecret', config.secret);
-require('./auth');
+require('./authen');
 
 // config for body-parser
 app.use(bodyParser.urlencoded({ extended: false}));
