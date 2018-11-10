@@ -14,9 +14,6 @@ PostsSchema = new Schema({
     post_detail : {
         type : String
     },
-    post_image : {
-        type : String
-    },
     like_by : [{
         name : String
     }],

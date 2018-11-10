@@ -1,26 +1,148 @@
 express = require('express');
 passport = require('passport');
 jwt = require('jsonwebtoken');
-config = require('./config');
+config = require('../config/config');
 apiRoutes = express.Router();
+User = require('../model/users');
 
-apiRoutes.post('/login', async (req, res, next) => {
-  passport.authenticate('login', async (err, user, info) => {     
-try {
-      	if(err || !user){
-        		const error = new Error('An Error occured')
-        		return next(error);
-      	}
-      	req.login(user, { session : false }, async (error) => {
-        		if( error ) return next(error)
-               	const body = { _id : user._id, username : user.username };
-        token = jwt.sign({ user : body },config.secret);
-        //Send back the token to the user
-        return res.json({ token });
-      });     } catch (error) {
-      return next(error);
-    }
-  })(req, res, next);
+apiRoutes.post('/authen', (req, res, next) => {
+  const username = req.body.username;
+  const password = req.body.password;
+
+  User.getUserByUsername(username, (err, user) => {
+      if (err) throw err;
+      // console.log(user);
+
+      if (!user) {
+          return res.json({
+              success: false,
+              msg: 'อีเมล์หรือรหัสผ่านไม่ถูกต้อง'
+          })
+      }
+
+      User.comparePassword(password, user.password, (err, isMatch) => {
+          if (err) throw err;
+          if (isMatch) {
+              const token = jwt.sign(user.toJSON(), config.secret, {
+                  expiresIn: 604800
+              });
+
+              res.json({
+                  success: true,
+                  token: 'Bearer ' + token,
+                  user: {
+                      id: user._id,
+                      name: user.name,
+                      username: user.username,
+                      email: user.email
+                  }
+              })
+          } else {
+              return res.json({
+                  success: false,
+                  msg: 'รหัสผ่านไม่ถูกต้อง'
+              })
+          }
+      });
+  })
 });
+
+apiRoutes.post('/changepassword', (req, res) => {
+  let username = req.body.username;
+  let old_password = req.body.old_password;
+  let new_password = req.body.new_password; 
+
+  // res.json({
+  //   username: username,
+  //   old: old_password,
+  //   new: new_password
+  // })
+  
+  User.getUserByUsername(username,(err, user) => {
+    if (err) throw err;
+    // res.json({
+    //   user: user
+    // })
+    if (!user) {
+      return res.json({
+        success: false,
+        message: 'username ไม่ถูกต้องหรือไม่มี username นี้'
+      })
+    }
+
+    User.comparePassword(old_password, user.password, (err, isMatch) => {
+      if (err) throw err;
+      if (isMatch) {
+        // return res.json({
+        //   success: true,
+        //   message: 'รหัสผ่านตรงกัน'
+        // })
+        
+        User.enHash(new_password, (err, password) => {
+          if (err) throw err;
+          new_password = password;
+          User.updatePassword(username, new_password, (err) => {
+              if (err) throw err;
+              res.json({
+                success: true,
+                message: 'เปลี่ยนรหัสผ่านเรียบร้อย'
+              })
+          })
+        })
+
+      }else {
+        return res.json({
+          success: false,
+          message: 'รหัสผ่านไม่ถูกต้อง'
+        })
+      }
+    })
+
+  })
+
+});
+
+apiRoutes.post('/register', (req,res, next) => {
+  let newUser = new User({
+      username: req.body.username,
+      password: req.body.password,
+      name: req.body.name,
+      email: req.body.email
+  });
+
+  User.addUser(newUser, (err, count) => {
+    if( count > 0){
+      res.json({
+        success: false,
+        message: 'username นี้มีผู้ใช้งานแล้ว'
+      })
+    }else{
+      res.json({
+        success: true,
+        message: 'สมัครสมาชิกเสร็จสิ้น'
+      })
+    }
+  })  
+})
+
+// apiRoutes.post('/login', async (req, res, next) => {
+//   passport.authenticate('login', async (err, user, info) => {     
+//     try {
+//       if(err || !user){
+//       	const error = new Error('An Error occured')
+//       	return next(error);
+//       }
+//       req.login(user, { session : false }, async (error) => {
+//         if( error ) return next(error)
+//         const body = { _id : user._id, username : user.username };
+//         token = jwt.sign({ user : body },config.secret);
+//         //Send back the token to the user
+//         return res.json({ token });
+//       });     
+//     } catch (error) {
+//       return next(error);
+//     }
+//   })(req, res, next);
+// });
 
 module.exports = apiRoutes;

@@ -1,19 +1,19 @@
 passport = require('passport');
 localStrategy = require('passport-local').Strategy;
-User = require('./user');
-config = require('./config');
+User = require('./model/users');
+config = require('./config/config');
 JWTstrategy = require('passport-jwt').Strategy;
 //We use this to extract the JWT sent by the user
 ExtractJWT = require('passport-jwt').ExtractJwt;
 
 //Create a passport middleware to handle User login
 passport.use('login', new localStrategy({
-  usernameField : 'username',
-  passwordField : 'password'
+  username : 'admin',
+  password : 'password'
 }, async (username, password, done) => {
   try {
     //Find the user
-    user = await User.findOne({ username });
+    User = await User.findOne({ username });
     if( !user ){
       //If the user isn't found in the database, return a message
       return done(null, false, { message : 'User not found'});
