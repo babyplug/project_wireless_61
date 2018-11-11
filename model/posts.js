@@ -18,8 +18,8 @@ PostsSchema = new Schema({
         type : String
     }],
     comment : [{
-        name : String,
-        detail : String
+        name_comment : String,
+        detail_comment : String
     }]
 })
 

@@ -170,7 +170,7 @@ apiRoutes.put('/like', (req, res, next) => {
     // res.json({data})
     if(!checkexists(data.like_by, req.body.username)){
       Post.updateOne({
-        '_id' : ObjectId(`${req.body.id}`)
+        '_id' : ObjectId(`${req.body.postid}`)
       },{
         $push: {
           'like_by': req.body.username
@@ -185,7 +185,7 @@ apiRoutes.put('/like', (req, res, next) => {
       })
     } else {
       Post.updateOne({
-        '_id': ObjectId(`${req.body.id}`)
+        '_id': ObjectId(`${req.body.postid}`)
       }, {
         $pull: {
           like_by: req.body.username
@@ -215,17 +215,61 @@ checkexists = (like_by, username) => {
 //all path /comment below here
 //creat comment
 apiRoutes.post('/comment', (req, res, next) => {
-
+  name = req.body.name, detail = req.body.detail;
+  Post.updateOne(
+    {
+       _id: req.body.postid
+    },
+    {
+     $push: {
+       comment: {
+          name_comment: name,
+          detail_comment: detail     
+       }
+     } 
+    },
+      (err, data) =>{
+        if(err) throw err;
+        res.json({
+          success: true,
+          message: 'comment success'
+        })
+      }
+    )
 })
 
 //edit comment
 apiRoutes.put('/comment', (req, res, next) => {
-
+  name = req.body.name, newDetail = req.body.detail;
+  Post.findById(req.body.postid,(err, post) => {
+    // res.json(post.comment)
+    post.comment.forEach(element => {
+      if(element._id == req.body.commentid){
+        return res.json(element)
+        // Post.updateOne(
+        //   {
+        //     _id: req.postid
+        //   },
+        //   {
+        //     $set: {
+        //       comment: {
+        //           name_comment: name,
+        //           detail_comment: newDetail
+        //       }
+        //     }
+        //   })
+      }
+    })
+    res.json({
+      success: false,
+      message: 'comment not found'
+    })
+  })
 })
 
 //delete comment
 apiRoutes.delete('/comment', (req, res, next) => {
-
+  
 })
 
 module.exports = apiRoutes;
