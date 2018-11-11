@@ -3,11 +3,12 @@ app         = express();
 bodyParser  = require('body-parser');
 morgan      = require('morgan');
 mongoose    = require('mongoose');
-jwt         = require('jsonwebtoken');
 passport 	= require('passport');
 config      = require('./config/config');
 routes 		= require('./route/routes');
 secureRoute = require('./route/secure_routes');
+session     = require('express-session');
+cookeyParser    = require('cookie-parser');
 
 // =======================
 // configuration
@@ -25,6 +26,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 require('./config/passport')(passport);
 
+//view engine setup
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+
 // config for body-parser
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(bodyParser.json());
@@ -36,7 +41,7 @@ app.use(morgan('combined'));
 // routes
 // =======================
 app.use('/', routes);
-app.use('/api', passport.authenticate('jwt', { session : false }), secureRoute );
+app.use('/auth', passport.authenticate('jwt',{ session : false }), secureRoute );
 
 // =======================
 // start the server

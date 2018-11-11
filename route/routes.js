@@ -5,7 +5,31 @@ config = require('../config/config');
 apiRoutes = express.Router();
 User = require('../model/users');
 
-apiRoutes.post('/authen', (req, res, next) => {
+apiRoutes.get('', (req,res,next) => {
+  res.render('index');
+})
+
+apiRoutes.get('/login', (req,res) => {
+  res.render('login');
+})
+
+apiRoutes.get('/register', (req,res) => {
+  res.render('signup');
+})
+
+apiRoutes.get('/recipe', (req,res) => {
+
+})
+
+apiRoutes.get('/recipe/:name', (req,res) => {
+  res.json(req.params)
+})
+
+apiRoutes.get('/recipe/rate', (req,res) => {
+  
+})
+
+apiRoutes.post('/login', (req, res, next) => {
   const username = req.body.username;
   const password = req.body.password;
 
@@ -27,7 +51,11 @@ apiRoutes.post('/authen', (req, res, next) => {
                   expiresIn: 604800
               });
 
-              res.json({
+              // return res.redirect('/auth');
+              
+              localStorage.setItem('isLoggedin', true)
+
+              return res.json({
                   success: true,
                   token: 'Bearer ' + token,
                   user: {
@@ -38,6 +66,7 @@ apiRoutes.post('/authen', (req, res, next) => {
                   }
               })
           } else {
+              // return res.redirect('/login');
               return res.json({
                   success: false,
                   msg: 'รหัสผ่านไม่ถูกต้อง'
@@ -47,60 +76,7 @@ apiRoutes.post('/authen', (req, res, next) => {
   })
 });
 
-apiRoutes.post('/changepassword', (req, res) => {
-  let username = req.body.username;
-  let old_password = req.body.old_password;
-  let new_password = req.body.new_password; 
 
-  // res.json({
-  //   username: username,
-  //   old: old_password,
-  //   new: new_password
-  // })
-  
-  User.getUserByUsername(username,(err, user) => {
-    if (err) throw err;
-    // res.json({
-    //   user: user
-    // })
-    if (!user) {
-      return res.json({
-        success: false,
-        message: 'username ไม่ถูกต้องหรือไม่มี username นี้'
-      })
-    }
-
-    User.comparePassword(old_password, user.password, (err, isMatch) => {
-      if (err) throw err;
-      if (isMatch) {
-        // return res.json({
-        //   success: true,
-        //   message: 'รหัสผ่านตรงกัน'
-        // })
-        
-        User.enHash(new_password, (err, password) => {
-          if (err) throw err;
-          new_password = password;
-          User.updatePassword(username, new_password, (err) => {
-              if (err) throw err;
-              res.json({
-                success: true,
-                message: 'เปลี่ยนรหัสผ่านเรียบร้อย'
-              })
-          })
-        })
-
-      }else {
-        return res.json({
-          success: false,
-          message: 'รหัสผ่านไม่ถูกต้อง'
-        })
-      }
-    })
-
-  })
-
-});
 
 apiRoutes.post('/register', (req,res, next) => {
   let newUser = new User({
@@ -129,8 +105,8 @@ apiRoutes.post('/register', (req,res, next) => {
 //   passport.authenticate('login', async (err, user, info) => {     
 //     try {
 //       if(err || !user){
-//       	const error = new Error('An Error occured')
-//       	return next(error);
+//       	// const error = new Error('An Error occured')
+//       	return next(err);
 //       }
 //       req.login(user, { session : false }, async (error) => {
 //         if( error ) return next(error)

@@ -1,17 +1,17 @@
 Schema = require('mongoose').Schema
-bcrypt = require('bcrypt')
+bcrypt = require('bcryptjs')
 
 PostsSchema = new Schema({
-	user_id : {
+	username: {
 		type : String
 	},
-	post_name : {
+	name : {
 		type : String
     },
-    post_date : {
+    date : {
         type : String
     },
-    post_detail : {
+    detail : {
         type : String
     },
     like_by : [{
@@ -24,3 +24,7 @@ PostsSchema = new Schema({
 })
 
 module.exports = mongoose.model('Posts', PostsSchema)
+
+module.exports.addPost = (newPost,callback)=> {
+    newPost.save(callback)
+}
