@@ -2,10 +2,7 @@ express = require('express');
 apiRoutes = express.Router();
 passport = require('passport');
 Post = require('../model/posts');
-
-
-//set
-require('../config/passport')(passport);
+ObjectId = require('mongodb').ObjectId;
 
 // GET(http://localhost:8000/api/)
 apiRoutes.get('', function(req, res) {
@@ -13,6 +10,48 @@ apiRoutes.get('', function(req, res) {
   
 });
 
+// GET(http://localhost:8000/api/users)
+apiRoutes.get('/users', function(req, res) {
+  User.find({}, function(err, users) {
+    if (err) throw err;
+    res.json(users);
+  });
+}); 
+
+//profile is below here
+apiRoutes.delete('/profile', (req, res, next) => {
+  id = req.body.id;
+  // res.json({
+  //   id: req.body.id
+  // })
+  User.getUserByID( (id), (err, user, next) => {
+    if(err) return err;
+    if(!user) {
+      return res.json({message: 'not found !'})
+    }else {
+      if(user.id = id){
+        // return res.json({
+        //   username: user.username
+        // }) 
+        User.findByIdAndRemove(id,(err)=>{
+          if (err) next(err);
+          res.json({
+            success: true,
+            message: 'delete user success'
+          })
+        })
+      }else {
+        return res.json({
+          success: false,
+          message: ''
+        })
+      }  
+    }
+  })
+})
+
+
+// change password below here
 apiRoutes.get('/changepassword', (req,res,next) => {
   res.render('changepassword');
 })
@@ -71,21 +110,14 @@ apiRoutes.post('/changepassword', (req, res) => {
   })
 });
 
-// GET(http://localhost:8000/api/users)
-apiRoutes.get('/users', function(req, res) {
-  User.find({}, function(err, users) {
-    if (err) throw err;
-    res.json(users);
-  });
-});
-
+// all path /post below here
 apiRoutes.get('/post', (req, res, next) => {
   res.render('post');
 })
 
 apiRoutes.post('/post', (req, res, next) => {
   let newPost = new Post({
-    username: req.body.username,
+    author: req.body.author,
     name: req.body.name,
     detail: req.body.detail
   })
@@ -100,11 +132,11 @@ apiRoutes.post('/post', (req, res, next) => {
 })
 
 apiRoutes.put('/post', (req, res, next) => {
-  query = {username: req.body.username}
+  query = {author: req.body.author}
   id = req.body.id;
   newpost = { name: req.body.name, detail: req.body.detail}
   Post.findById(id, (err, post) =>{
-    if(query.username == post.username){
+    if(query.author == post.author){
       Post.findByIdAndUpdate(id,{ $set: newpost},(err) => {
         if(err) next(err);
         return res.json({
@@ -117,10 +149,10 @@ apiRoutes.put('/post', (req, res, next) => {
 })
 
 apiRoutes.delete('/post', (req, res, next) => {
-  query = {username: req.body.username}
+  query = {author: req.body.author}
   id = req.body.id;
   Post.findById(id, (err, post) =>{
-    if(query.username == post.username){
+    if(query.author == post.author){
       Post.findByIdAndRemove(id,(err) => {
         return res.json({
           success: true,
@@ -131,58 +163,69 @@ apiRoutes.delete('/post', (req, res, next) => {
   })
 })
 
-apiRoutes.delete('/deleteuser', (req, res, next) => {
-  id = req.body.id;
-  // res.json({
-  //   id: req.body.id
-  // })
-  User.getUserByID( (id), (err, user, next) => {
-    if(err) return err;
-    if(!user) {
-      return res.json({message: 'not found !'})
-    }else {
-      if(user.id = id){
-        // return res.json({
-        //   username: user.username
-        // }) 
-        User.findByIdAndRemove(id,(err)=>{
-          if (err) next(err);
-          res.json({
-            success: true,
-            message: 'delete user success'
-          })
+//all path /like here
+apiRoutes.put('/like', (req, res, next) => {
+  Post.findById(
+  req.body.id,(err, data) => {
+    // res.json({data})
+    if(!checkexists(data.like_by, req.body.username)){
+      Post.updateOne({
+        '_id' : ObjectId(`${req.body.id}`)
+      },{
+        $push: {
+          'like_by': req.body.username
+        }
+      }, (err, data) => {
+        if(err) throw (err);
+        console.log(data)
+        res.json({
+          success: true,
+          message: 'like'
         })
-      }else {
-        return res.json({
-          success: false,
-          message: ''
+      })
+    } else {
+      Post.updateOne({
+        '_id': ObjectId(`${req.body.id}`)
+      }, {
+        $pull: {
+          like_by: req.body.username
+        }
+      }, (err, data) => {
+        if(err) throw err;
+        console.log(data)
+        res.json({
+          success: true,
+          message: 'unlike'
         })
-      }  
+      })
     }
   })
 })
 
-apiRoutes.post('/like', (req, res, next) => {
+checkexists = (like_by, username) => {
+  check = false;
+  like_by.forEach(element => {
+    if(username == element) {
+      check = true
+    }
+  })
+  return check;
+}
 
-})
-
-apiRoutes.put('/like', (req, res, next) => {
-
-})
-
-apiRoutes.delete('/like', (req, res, next) => {
-
-})
-
+//all path /comment below here
+//creat comment
 apiRoutes.post('/comment', (req, res, next) => {
 
 })
 
+//edit comment
 apiRoutes.put('/comment', (req, res, next) => {
 
 })
 
+//delete comment
 apiRoutes.delete('/comment', (req, res, next) => {
 
 })
+
 module.exports = apiRoutes;

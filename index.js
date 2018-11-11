@@ -21,7 +21,7 @@ mongoose.connect(config.database,{useNewUrlParser:true});
 
 // application variables
 app.set('superSecret', config.secret);
-require('./authen');
+// require('./authen');
 app.use(passport.initialize());
 app.use(passport.session());
 require('./config/passport')(passport);
@@ -42,6 +42,9 @@ app.use(morgan('combined'));
 // =======================
 app.use('/', routes);
 app.use('/auth', passport.authenticate('jwt',{ session : false }), secureRoute );
+app.use((req,res) => {
+    res.status(404).render('notfound');
+})
 
 // =======================
 // start the server

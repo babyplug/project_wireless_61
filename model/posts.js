@@ -2,7 +2,7 @@ Schema = require('mongoose').Schema
 bcrypt = require('bcryptjs')
 
 PostsSchema = new Schema({
-	username: {
+	author: {
 		type : String
 	},
 	name : {
@@ -15,7 +15,7 @@ PostsSchema = new Schema({
         type : String
     },
     like_by : [{
-        name : String
+        type : String
     }],
     comment : [{
         name : String,

@@ -4,6 +4,7 @@ jwt = require('jsonwebtoken');
 config = require('../config/config');
 apiRoutes = express.Router();
 User = require('../model/users');
+Post = require('../model/posts');
 
 apiRoutes.get('', (req,res,next) => {
   res.render('index');
@@ -18,11 +19,17 @@ apiRoutes.get('/register', (req,res) => {
 })
 
 apiRoutes.get('/recipe', (req,res) => {
-
+  Post.find({}, (err,posts) => {
+    res.json(posts)
+  })
 })
 
-apiRoutes.get('/recipe/:name', (req,res) => {
-  res.json(req.params)
+apiRoutes.get('/recipe/:author', (req,res) => {
+  //name = {req.params}
+  Post.find(req.params, (err, posts) => {
+    res.json(posts)
+  })
+  // res.json(req.params)
 })
 
 apiRoutes.get('/recipe/rate', (req,res) => {
