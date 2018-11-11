@@ -222,7 +222,7 @@ apiRoutes.post('/comment', (req, res, next) => {
     },
     {
      $push: {
-       comment: {
+       comments: {
           name_comment: name,
           detail_comment: detail     
        }
@@ -241,35 +241,78 @@ apiRoutes.post('/comment', (req, res, next) => {
 //edit comment
 apiRoutes.put('/comment', (req, res, next) => {
   name = req.body.name, newDetail = req.body.detail;
-  Post.findById(req.body.postid,(err, post) => {
-    // res.json(post.comment)
-    post.comment.forEach(element => {
-      if(element._id == req.body.commentid){
-        return res.json(element)
-        // Post.updateOne(
-        //   {
-        //     _id: req.postid
-        //   },
-        //   {
-        //     $set: {
-        //       comment: {
-        //           name_comment: name,
-        //           detail_comment: newDetail
-        //       }
-        //     }
-        //   })
-      }
-    })
-    res.json({
-      success: false,
-      message: 'comment not found'
-    })
-  })
+  // async index;
+  // Post.findById(req.body.postid,(err, post) => {
+  //   post.comments.forEach((element, index)=> {
+  //     if(req.body.commentid == element._id){
+          
+  //     }
+  //   })
+  // })
+  Post.updateOne(
+    {
+       _id: req.body.postid
+    },
+    {
+     $set: {
+       comments: {
+        name_comment: name,
+        detail_comment: newDetail
+       }
+     } 
+    },
+    (err, data) =>{
+        if(err) throw err;
+        if(!data.nModified){
+          res.json({
+            success: false,
+            message: 'not found comment'
+          })
+        }else {
+          res.json({
+            success: true,
+            message: 'update comment'
+          })
+        }
+    }
+   )
+
 })
 
 //delete comment
 apiRoutes.delete('/comment', (req, res, next) => {
-  
-})
+  name = req.body.name, detail = req.body.detail;
+  Post.updateOne(
+    {
+       _id: req.body.postid
+    },
+    {
+     $pull: {
+       comments: {
+         _id: req.body.commentid
+       }
+     } 
+    },
+      (err, data) =>{
+        if(err) throw err;
+        if(!data.nModified){
+          res.json({
+            success: false,
+            message: 'not found comment'
+          })
+        }else{
+          res.json({
+            success: true,
+            message: 'delete comment success'
+          })
+        }
 
+      }
+   )
+})
+// {
+//   "n": 1,
+//   "nModified": 1,
+//   "ok": 1
+// }
 module.exports = apiRoutes;

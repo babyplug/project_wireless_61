@@ -17,7 +17,7 @@ PostsSchema = new Schema({
     like_by : [{
         type : String
     }],
-    comment : [{
+    comments : [{
         name_comment : String,
         detail_comment : String
     }]
