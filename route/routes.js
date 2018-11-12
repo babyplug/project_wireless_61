@@ -27,7 +27,11 @@ apiRoutes.get('/recipe', (req,res) => {
 apiRoutes.get('/recipe/:author', (req,res) => {
   //name = {req.params}
   Post.find(req.params, (err, posts) => {
-    res.json(posts)
+    if(posts.length == 0){
+       res.status(404).render('notfound')
+    }else {
+       res.json(posts) 
+    }
   })
   // res.json(req.params)
 })
@@ -100,7 +104,7 @@ apiRoutes.post('/register', (req,res, next) => {
         message: 'username นี้มีผู้ใช้งานแล้ว'
       })
     }else{
-      res.json({
+      res.status(201).json({
         success: true,
         message: 'สมัครสมาชิกเสร็จสิ้น'
       })

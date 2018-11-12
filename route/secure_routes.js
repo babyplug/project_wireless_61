@@ -7,7 +7,6 @@ ObjectId = require('mongodb').ObjectId;
 // GET(http://localhost:8000/api/)
 apiRoutes.get('', function(req, res) {
   res.json({ message: 'Welcome to API routing'});
-  
 });
 
 // GET(http://localhost:8000/api/users)
@@ -41,9 +40,9 @@ apiRoutes.delete('/profile', (req, res, next) => {
           })
         })
       }else {
-        return res.json({
+        return res.status(404).json({
           success: false,
-          message: ''
+          message: 'no user found'
         })
       }  
     }
@@ -61,17 +60,9 @@ apiRoutes.post('/changepassword', (req, res) => {
   let old_password = req.body.old_password;
   let new_password = req.body.new_password; 
 
-  // res.json({
-  //   username: username,
-  //   old: old_password,
-  //   new: new_password
-  // })
-  
   User.getUserByUsername(username,(err, user) => {
     if (err) throw err;
-    // res.json({
-    //   user: user
-    // })
+
     if (!user) {
       return res.json({
         success: false,
@@ -82,17 +73,13 @@ apiRoutes.post('/changepassword', (req, res) => {
     User.comparePassword(old_password, user.password, (err, isMatch) => {
       if (err) throw err;
       if (isMatch) {
-        // return res.json({
-        //   success: true,
-        //   message: 'รหัสผ่านตรงกัน'
-        // })
-        
+
         User.enHash(new_password, (err, password) => {
           if (err) throw err;
           new_password = password;
           User.updatePassword(username, new_password, (err) => {
               if (err) throw err;
-              res.json({
+              res.status(201).json({
                 success: true,
                 message: 'เปลี่ยนรหัสผ่านเรียบร้อย'
               })
@@ -119,12 +106,14 @@ apiRoutes.post('/post', (req, res, next) => {
   let newPost = new Post({
     author: req.body.author,
     name: req.body.name,
-    detail: req.body.detail
+    detail: req.body.detail,
+    date: getdate()
   })
 
-  Post.addPost(newPost, (err) => {
+  Post.addPost(newPost, (err,data) => {
     if(err) next(err);
-    return res.json({
+    // res.json(data)
+    res.status(201).json({
       success: true,
       message: 'เผยแพร่สูตรเรียบร้อยแล้ว'
     })
@@ -133,16 +122,21 @@ apiRoutes.post('/post', (req, res, next) => {
 
 apiRoutes.put('/post', (req, res, next) => {
   query = {author: req.body.author}
-  id = req.body.id;
+  postid = req.body.postid;
   newpost = { name: req.body.name, detail: req.body.detail}
-  Post.findById(id, (err, post) =>{
-    if(query.author == post.author){
-      Post.findByIdAndUpdate(id,{ $set: newpost},(err) => {
+  Post.findById(postid, (err, post) =>{
+    if(post != null && query.author == post.author){
+      Post.findByIdAndUpdate(postid,{ $set: newpost},(err,data) => {
         if(err) next(err);
-        return res.json({
+        res.status(201).json({
           success: true,
           message: 'update post success! '
         })
+      })
+    }else{
+      res.status(403).json({
+        success: false,
+        message: 'you have no permission to edit post! '
       })
     }
   })
@@ -150,14 +144,22 @@ apiRoutes.put('/post', (req, res, next) => {
 
 apiRoutes.delete('/post', (req, res, next) => {
   query = {author: req.body.author}
-  id = req.body.id;
-  Post.findById(id, (err, post) =>{
-    if(query.author == post.author){
-      Post.findByIdAndRemove(id,(err) => {
+  postid = req.body.postid;
+  Post.findById(postid, (err, post) =>{
+    if(err) throw err;
+    if(post == null){
+      res.status(404).json({
+        success: false,
+        message: 'post has been deleted'
+      })
+      // res.json({post: post})
+    }else if(post != null && query.author == post.author){
+      Post.findByIdAndRemove(postid,(err,data) => {
         return res.json({
           success: true,
           message: 'delete post success! '
         })
+        // res.json(data)
       })
     }
   })
@@ -178,7 +180,7 @@ apiRoutes.put('/like', (req, res, next) => {
       }, (err, data) => {
         if(err) throw (err);
         console.log(data)
-        res.json({
+        res.status(201).json({
           success: true,
           message: 'like'
         })
@@ -230,10 +232,17 @@ apiRoutes.post('/comment', (req, res, next) => {
     },
       (err, data) =>{
         if(err) throw err;
-        res.json({
-          success: true,
-          message: 'comment success'
-        })
+        if(!data.nModified){
+          res.status(204).json({
+            success: false,
+            message: 'comment not success'
+          })
+        }else {
+          res.status(201).json({
+            success: true,
+            message: 'create comment'
+          })
+        }
       }
     )
 })
@@ -264,7 +273,7 @@ apiRoutes.put('/comment', (req, res, next) => {
     (err, data) =>{
         if(err) throw err;
         if(!data.nModified){
-          res.json({
+          res.status(204).json({
             success: false,
             message: 'not found comment'
           })
@@ -296,7 +305,7 @@ apiRoutes.delete('/comment', (req, res, next) => {
       (err, data) =>{
         if(err) throw err;
         if(!data.nModified){
-          res.json({
+          res.status(404).json({
             success: false,
             message: 'not found comment'
           })
@@ -310,6 +319,14 @@ apiRoutes.delete('/comment', (req, res, next) => {
       }
    )
 })
+
+function getdate() {
+  var date = new Date().toISOString().
+  replace(/T/, ' ').
+  replace(/\..+/, '');
+  return date;
+}
+
 // {
 //   "n": 1,
 //   "nModified": 1,
