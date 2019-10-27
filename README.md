@@ -5,20 +5,20 @@ This project is food recipe, so you can register and login to create your own re
 folder structure  
 --config  
 &nbsp;&nbsp;--local.js  
-  --config.js  
-  --passport.js  
+&nbsp;&nbsp;--config.js  
+&nbsp;&nbsp;--passport.js  
 --model  
-  --users.js  
-  --posts.js  
+&nbsp;&nbsp;--users.js  
+&nbsp;&nbsp;--posts.js  
 --routes  
-  --routes.js  
-  --secure_routes.js  
+&nbsp;&nbsp;--routes.js  
+&nbsp;&nbsp;--secure_routes.js  
 --views  
-  --changepassword.ejs  
-  --index.ejs  
-  --login.ejs  
-  --notfound.ejs  
-  --post.ejs  
-  --profile.ejs  
-  --signup.ejs  
+&nbsp;&nbsp;--changepassword.ejs  
+&nbsp;&nbsp;--index.ejs  
+&nbsp;&nbsp;--login.ejs  
+&nbsp;&nbsp;--notfound.ejs  
+&nbsp;&nbsp;--post.ejs  
+&nbsp;&nbsp;--profile.ejs  
+&nbsp;&nbsp;--signup.ejs  
 --index.js  
