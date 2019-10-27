@@ -7,6 +7,7 @@ folder structure
   --local.js  
   --config.js  
   --passport.js  
+  
 --model  
   --users.js  
   --posts.js  
