@@ -7,18 +7,18 @@ folder structure
   --local.js  
   --config.js  
   --passport.js  
---model
-  --users.js
-  --posts.js
---routes
-  --routes.js
-  --secure_routes.js
---views
-  --changepassword.ejs
-  --index.ejs
-  --login.ejs
-  --notfound.ejs
-  --post.ejs
-  --profile.ejs
-  --signup.ejs
---index.js
+--model  
+  --users.js  
+  --posts.js  
+--routes  
+  --routes.js  
+  --secure_routes.js  
+--views  
+  --changepassword.ejs  
+  --index.ejs  
+  --login.ejs  
+  --notfound.ejs  
+  --post.ejs  
+  --profile.ejs  
+  --signup.ejs  
+--index.js  
