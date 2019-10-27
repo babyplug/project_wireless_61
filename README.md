@@ -4,10 +4,9 @@ This project is food recipe, so you can register and login to create your own re
 
 folder structure  
 --config  
-  --local.js  
+&nbsp;&nbsp;--local.js  
   --config.js  
   --passport.js  
-  
 --model  
   --users.js  
   --posts.js  
